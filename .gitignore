@@ -11,5 +11,15 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Local certificates and other ignores
+*.pem
+package-lock.json
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+bin/
+.idea/
+/.users/keys/
+.DS_Store
+target/
