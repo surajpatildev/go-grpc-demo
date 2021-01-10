@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+option go_package = ".;proto";
+import "google/api/annotations.proto";
+
+// User entity is able to access the console and perform various operations.
+message User {
+  // User's Identifier
+  uint32 ID = 1;
+  // User's Name
+  string name = 2;
+  // User's Email Address
+  string email = 4;
+
+}
+
+// Create user
+message CreateUser {
+  message Request {
+    User user = 1;
+  }
+  message Response {
+    User user = 1;
+  }
+}
+
+// Get user
+message GetUser {
+  message Request {
+    uint32 ID = 1;
+  }
+  message Response {
+    User user = 1;
+  }
+}
+
+// User Service
+service UserService {
+
+  // Create User
+  rpc CreateUser(CreateUser.Request) returns (CreateUser.Response){
+    option (google.api.http) = {
+      post: "/users"
+      body: "*"
+    };
+  };
+
+  // GetUser
+  rpc GetUser(GetUser.Request) returns (GetUser.Response){
+    option (google.api.http) = {
+      get: "/users/{ID}"
+    };
+  };
+
+}
