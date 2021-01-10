@@ -7,15 +7,16 @@ import (
 
 type User struct {
 	gorm.Model
-	Name  string
-	Email  string
+	Name     string
+	Email    string
+	Password string
 }
 
 func (user *User) ToProto() *proto.User {
 	return &proto.User{
-		ID:       uint32(user.ID),
-		Name:     user.Name,
-		Email:    user.Email,
+		ID:    uint32(user.ID),
+		Name:  user.Name,
+		Email: user.Email,
 	}
 }
 
@@ -23,5 +24,6 @@ func NewUserFormProto(user *proto.User) *User {
 	return &User{
 		Name:     user.Name,
 		Email:    user.Email,
+		Password: user.Password,
 	}
 }
