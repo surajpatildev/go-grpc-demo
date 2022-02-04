@@ -12,7 +12,7 @@ import (
 
 // InitialMigration for project with db.AutoMigrate
 func InitialMigration() *gorm.DB {
-	dsn := "host=localhost user=gorm password=gorm dbname=gorm port=5432 sslmode=disable"
+	dsn := "host=localhost user=vs password=111 dbname=vs port=5432 sslmode=disable"
 	con, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Println(err.Error())

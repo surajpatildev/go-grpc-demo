@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -18,6 +19,9 @@ func FindUser(db *gorm.DB, email string) (*User, error) {
 
 func CheckIfEmailExists(db *gorm.DB, email string) error {
 	_, err := FindUser(db, email)
+	if err == gorm.ErrRecordNotFound {
+		return nil
+	}
 	if err != gorm.ErrRecordNotFound {
 		return status.Error(codes.AlreadyExists, "Email Already Exists.")
 	}
