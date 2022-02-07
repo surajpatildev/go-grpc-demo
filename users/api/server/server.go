@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
 
@@ -79,69 +78,6 @@ func allowCORS(h http.Handler) http.Handler {
 	})
 }
 
-// ---
-
-type UserClaims struct {
-	jwt.StandardClaims
-	Username string `json:"username"`
-	Role     string `json:"role"`
-}
-
-func Verify(accessToken string) error {
-	token, err := jwt.ParseWithClaims(
-		accessToken,
-		&UserClaims{},
-		func(token *jwt.Token) (interface{}, error) {
-			_, ok := token.Method.(*jwt.SigningMethodHMAC)
-			if !ok {
-				return nil, fmt.Errorf("unexpected token signing method")
-			}
-
-			return []byte("my secret"), nil
-		},
-	)
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	claims, ok := token.Claims.(*UserClaims)
-	if !ok {
-		return fmt.Errorf("invalid token claims")
-	}
-
-	fmt.Println(claims)
-
-	return nil
-}
-
-func unaryInterceptor(
-	ctx context.Context,
-	req interface{},
-	info *grpc.UnaryServerInfo,
-	handler grpc.UnaryHandler,
-) (interface{}, error) {
-	log.Println("--> unary interceptor: ", info.FullMethod)
-
-	x := Verify("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDQwMjY1NjQsInVzZXJuYW1lIjoic2xhdmEiLCJyb2xlIjoiYWRtaW4ifQ.yjgm4Y5aMDiUGatTN6848xl0C597MbuXq64fP2PmndM")
-	fmt.Println(x)
-
-	return handler(ctx, req)
-}
-
-func streamInterceptor(
-	srv interface{},
-	stream grpc.ServerStream,
-	info *grpc.StreamServerInfo,
-	handler grpc.StreamHandler,
-) error {
-	log.Println("--> stream interceptor: ", info.FullMethod)
-	return handler(srv, stream)
-}
-
-// ---
-
 // Serve sets up the server and listens for requests
 func (s *Server) Serve() error {
 	ctx := context.Background()
@@ -154,6 +90,7 @@ func (s *Server) Serve() error {
 	log.Println("Starting server...")
 
 	// Setup the gRPC server
+	// unaryInterceptor checks AUTH
 	g := grpc.NewServer(
 		grpc.UnaryInterceptor(unaryInterceptor),
 		grpc.StreamInterceptor(streamInterceptor),
@@ -180,6 +117,7 @@ func (s *Server) Serve() error {
 	}
 
 	mux.Handle("/", gw)
+	mux.HandleFunc("/auth", GetToken)
 
 	// Start the http getaway mux server
 	log.Println("Getaway Mux Server started on ", httpAddr)
